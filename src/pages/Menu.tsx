@@ -62,14 +62,32 @@ const Menu = () => {
   const [customerName, setCustomerName] = useState({ firstName: "", lastName: "" });
   const [showNamePrompt, setShowNamePrompt] = useState(true);
 
-  // Auto-detect table number from URL (simulated for QR codes)
+  // Sequential table numbering with daily reset (1-100)
+  const getNextTableNumber = (): number => {
+    const today = new Date().toDateString();
+    const storedDate = localStorage.getItem("xyz_table_date");
+    let currentNumber = parseInt(localStorage.getItem("xyz_table_counter") || "0");
+
+    if (storedDate !== today) {
+      // Reset counter at start of new day
+      currentNumber = 0;
+      localStorage.setItem("xyz_table_date", today);
+    }
+
+    // Increment and wrap at 100
+    const nextNumber = (currentNumber % 100) + 1;
+    localStorage.setItem("xyz_table_counter", nextNumber.toString());
+    return nextNumber;
+  };
+
+  // Auto-detect table number from URL or assign sequentially
   useEffect(() => {
     const table = searchParams.get("table");
     if (table) {
       setTableNumber(parseInt(table));
     } else {
-      // Simulate auto-detection for demo - random table 1-20
-      setTableNumber(Math.floor(Math.random() * 20) + 1);
+      // Assign sequential table number (1-100, daily reset)
+      setTableNumber(getNextTableNumber());
     }
 
     const tab = searchParams.get("tab");
