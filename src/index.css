@@ -10,96 +10,103 @@
 
 @layer base {
   :root {
-    /* Deep warm brown background */
-    --background: 25 20% 12%;
-    --foreground: 35 25% 90%;
+    /* Warm off-white background */
+    --background: 45 40% 96%;
+    --foreground: 20 25% 15%;
 
-    /* Cards with warmth */
-    --card: 25 18% 16%;
-    --card-foreground: 35 25% 90%;
+    /* Clean cards */
+    --card: 45 30% 99%;
+    --card-foreground: 20 25% 15%;
 
-    --popover: 25 18% 16%;
-    --popover-foreground: 35 25% 90%;
+    --popover: 45 30% 99%;
+    --popover-foreground: 20 25% 15%;
 
-    /* Rich terracotta/burnt orange primary */
-    --primary: 18 70% 50%;
-    --primary-foreground: 25 20% 10%;
+    /* Bold African red/terracotta primary */
+    --primary: 8 85% 45%;
+    --primary-foreground: 45 40% 98%;
 
-    /* Warm earthy secondary */
-    --secondary: 25 15% 22%;
-    --secondary-foreground: 35 25% 90%;
+    /* Earthy green secondary */
+    --secondary: 145 50% 30%;
+    --secondary-foreground: 45 40% 98%;
 
-    /* Muted warm tones */
-    --muted: 25 12% 20%;
-    --muted-foreground: 35 15% 55%;
+    /* Warm sand muted */
+    --muted: 40 25% 90%;
+    --muted-foreground: 25 20% 40%;
 
-    /* Gold accent */
-    --accent: 42 75% 50%;
-    --accent-foreground: 25 20% 10%;
+    /* Vibrant golden yellow accent */
+    --accent: 45 95% 50%;
+    --accent-foreground: 20 25% 15%;
 
     /* Deep green for success states */
-    --success: 145 45% 35%;
-    --success-foreground: 35 30% 97%;
+    --success: 145 55% 35%;
+    --success-foreground: 45 40% 98%;
 
-    --destructive: 0 65% 45%;
-    --destructive-foreground: 35 25% 90%;
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 45 40% 98%;
 
-    --border: 25 15% 25%;
-    --input: 25 15% 25%;
-    --ring: 18 70% 50%;
+    --border: 40 20% 85%;
+    --input: 40 20% 85%;
+    --ring: 8 85% 45%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 25 25% 8%;
-    --sidebar-foreground: 35 30% 92%;
-    --sidebar-primary: 18 70% 50%;
-    --sidebar-primary-foreground: 25 20% 10%;
-    --sidebar-accent: 25 20% 15%;
-    --sidebar-accent-foreground: 35 30% 92%;
-    --sidebar-border: 25 18% 20%;
-    --sidebar-ring: 18 70% 50%;
+    --sidebar-background: 145 45% 20%;
+    --sidebar-foreground: 45 40% 95%;
+    --sidebar-primary: 45 95% 50%;
+    --sidebar-primary-foreground: 20 25% 15%;
+    --sidebar-accent: 145 40% 25%;
+    --sidebar-accent-foreground: 45 40% 95%;
+    --sidebar-border: 145 35% 25%;
+    --sidebar-ring: 8 85% 45%;
   }
 
   .dark {
-    --background: 25 25% 8%;
-    --foreground: 35 30% 92%;
+    /* Deep green-black background */
+    --background: 150 30% 8%;
+    --foreground: 45 35% 92%;
 
-    --card: 25 22% 12%;
-    --card-foreground: 35 30% 92%;
+    /* Rich dark cards */
+    --card: 150 25% 12%;
+    --card-foreground: 45 35% 92%;
 
-    --popover: 25 22% 12%;
-    --popover-foreground: 35 30% 92%;
+    --popover: 150 25% 12%;
+    --popover-foreground: 45 35% 92%;
 
-    --primary: 18 70% 50%;
-    --primary-foreground: 25 25% 8%;
+    /* Vibrant African red primary */
+    --primary: 8 80% 55%;
+    --primary-foreground: 150 30% 8%;
 
-    --secondary: 25 18% 20%;
-    --secondary-foreground: 35 30% 92%;
+    /* Forest green secondary */
+    --secondary: 145 40% 22%;
+    --secondary-foreground: 45 35% 92%;
 
-    --muted: 25 18% 18%;
-    --muted-foreground: 35 15% 55%;
+    /* Dark muted tones */
+    --muted: 150 20% 18%;
+    --muted-foreground: 45 20% 55%;
 
-    --accent: 42 80% 50%;
-    --accent-foreground: 25 25% 8%;
+    /* Golden yellow accent */
+    --accent: 45 90% 55%;
+    --accent-foreground: 150 30% 8%;
 
-    --success: 145 45% 40%;
-    --success-foreground: 25 25% 8%;
+    /* Success green */
+    --success: 145 50% 40%;
+    --success-foreground: 150 30% 8%;
 
-    --destructive: 0 65% 45%;
-    --destructive-foreground: 35 30% 92%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 45 35% 92%;
 
-    --border: 25 18% 22%;
-    --input: 25 18% 22%;
-    --ring: 18 70% 50%;
+    --border: 150 20% 20%;
+    --input: 150 20% 20%;
+    --ring: 8 80% 55%;
 
-    --sidebar-background: 25 25% 6%;
-    --sidebar-foreground: 35 30% 92%;
-    --sidebar-primary: 18 70% 50%;
-    --sidebar-primary-foreground: 25 25% 8%;
-    --sidebar-accent: 25 20% 12%;
-    --sidebar-accent-foreground: 35 30% 92%;
-    --sidebar-border: 25 20% 15%;
-    --sidebar-ring: 18 70% 50%;
+    --sidebar-background: 150 30% 6%;
+    --sidebar-foreground: 45 35% 92%;
+    --sidebar-primary: 45 90% 55%;
+    --sidebar-primary-foreground: 150 30% 8%;
+    --sidebar-accent: 150 25% 14%;
+    --sidebar-accent-foreground: 45 35% 92%;
+    --sidebar-border: 150 20% 15%;
+    --sidebar-ring: 8 80% 55%;
   }
 }
 
