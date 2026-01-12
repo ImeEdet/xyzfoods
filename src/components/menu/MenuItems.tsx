@@ -2,15 +2,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Plus } from "lucide-react";
-import { MenuItem, menuData } from "@/types/menu";
+import { MenuItem, menuData, Ingredient, SpecialInstructions } from "@/types/menu";
+import { CustomMealBuilder } from "./CustomMealBuilder";
 
 interface MenuItemsProps {
   onAddToCart: (item: MenuItem) => void;
+  onAddCustomMeal: (meal: {
+    name: string;
+    price: number;
+    time: number;
+    ingredients: Ingredient[];
+    instructions: SpecialInstructions;
+  }) => void;
 }
 
-export const MenuItems = ({ onAddToCart }: MenuItemsProps) => {
+export const MenuItems = ({ onAddToCart, onAddCustomMeal }: MenuItemsProps) => {
   return (
     <div className="space-y-8">
+      {/* Custom Meal Builder at the top */}
+      <CustomMealBuilder onAddToCart={onAddCustomMeal} />
+
+      {/* Regular Menu Items */}
       {Object.entries(menuData).map(([category, items]) => (
         <div key={category}>
           <h2 className="text-2xl font-bold capitalize mb-4 font-serif text-foreground">
