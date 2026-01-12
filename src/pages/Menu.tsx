@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { UtensilsCrossed, MapPin } from "lucide-react";
 import { toast } from "sonner";
 
-import { CartItem, MenuItem } from "@/types/menu";
+import { CartItem, MenuItem, Ingredient, SpecialInstructions } from "@/types/menu";
 import { useOrders } from "@/hooks/useOrders";
 import { MenuItems } from "@/components/menu/MenuItems";
 import { OrderCart } from "@/components/menu/OrderCart";
@@ -24,6 +24,7 @@ const Menu = () => {
   const [customerName, setCustomerName] = useState({ firstName: "", lastName: "" });
   const [showNamePrompt, setShowNamePrompt] = useState(true);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [customMealCounter, setCustomMealCounter] = useState(1000); // Start at 1000 for custom meal IDs
 
   const {
     orders,
@@ -70,13 +71,46 @@ const Menu = () => {
 
   const addToCart = (item: MenuItem) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const existing = prev.find((i) => i.id === item.id && !i.isCustomMeal);
       if (existing) {
-        return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i));
+        return prev.map((i) => (i.id === item.id && !i.isCustomMeal ? { ...i, quantity: i.quantity + 1 } : i));
       }
-      return [...prev, { id: item.id, name: item.name, price: item.price, time: item.time, quantity: 1 }];
+      return [...prev, { 
+        id: item.id, 
+        name: item.name, 
+        price: item.price, 
+        time: item.time, 
+        quantity: 1,
+        instructions: { commonOptions: [], customNote: "" }
+      }];
     });
     toast.success(`${item.name} added to cart`);
+  };
+
+  const addCustomMealToCart = (meal: {
+    name: string;
+    price: number;
+    time: number;
+    ingredients: Ingredient[];
+    instructions: SpecialInstructions;
+  }) => {
+    const newId = customMealCounter;
+    setCustomMealCounter((prev) => prev + 1);
+    
+    setCart((prev) => [
+      ...prev,
+      {
+        id: newId,
+        name: meal.name,
+        price: meal.price,
+        time: meal.time,
+        quantity: 1,
+        isCustomMeal: true,
+        selectedIngredients: meal.ingredients,
+        instructions: meal.instructions,
+      },
+    ]);
+    toast.success("Custom meal added to cart!");
   };
 
   const updateQuantity = (id: number, delta: number) => {
@@ -85,6 +119,13 @@ const Menu = () => {
         .map((item) => (item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item))
         .filter((item) => item.quantity > 0)
     );
+  };
+
+  const updateInstructions = (id: number, instructions: SpecialInstructions) => {
+    setCart((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, instructions } : item))
+    );
+    toast.success("Instructions updated");
   };
 
   const handlePlaceOrder = async () => {
@@ -221,7 +262,10 @@ const Menu = () => {
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Menu Items */}
               <div className="lg:col-span-2">
-                <MenuItems onAddToCart={addToCart} />
+                <MenuItems 
+                  onAddToCart={addToCart} 
+                  onAddCustomMeal={addCustomMealToCart}
+                />
               </div>
 
               {/* Cart Sidebar */}
@@ -230,6 +274,7 @@ const Menu = () => {
                   cart={cart}
                   tableNumber={tableNumber}
                   onUpdateQuantity={updateQuantity}
+                  onUpdateInstructions={updateInstructions}
                   onPlaceOrder={handlePlaceOrder}
                   isPlacingOrder={isPlacingOrder}
                 />

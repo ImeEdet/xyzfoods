@@ -7,13 +7,82 @@ export interface MenuItem {
   category: string;
 }
 
+export interface Ingredient {
+  id: string;
+  name: string;
+  price: number;
+  category: "protein" | "carb" | "vegetable" | "sauce" | "extra";
+}
+
+export interface SpecialInstructions {
+  commonOptions: string[];
+  customNote: string;
+}
+
 export interface CartItem {
   id: number;
   name: string;
   price: number;
   quantity: number;
   time: number;
+  isCustomMeal?: boolean;
+  selectedIngredients?: Ingredient[];
+  instructions?: SpecialInstructions;
 }
+
+// Common instruction options
+export const commonInstructionOptions = [
+  "Less spicy",
+  "Extra spicy",
+  "No onions",
+  "No pepper",
+  "Less salt",
+  "Well done",
+  "Gluten-free",
+  "No dairy",
+];
+
+// Available ingredients for custom meals
+export const availableIngredients: Ingredient[] = [
+  // Proteins
+  { id: "chicken", name: "Chicken", price: 2000, category: "protein" },
+  { id: "beef", name: "Beef", price: 2500, category: "protein" },
+  { id: "fish", name: "Fish (Tilapia)", price: 3000, category: "protein" },
+  { id: "goat", name: "Goat Meat", price: 3500, category: "protein" },
+  { id: "shrimp", name: "Shrimp", price: 4000, category: "protein" },
+  { id: "turkey", name: "Turkey", price: 2500, category: "protein" },
+  
+  // Carbs
+  { id: "rice", name: "White Rice", price: 800, category: "carb" },
+  { id: "jollof", name: "Jollof Rice Base", price: 1200, category: "carb" },
+  { id: "spaghetti", name: "Spaghetti", price: 1000, category: "carb" },
+  { id: "yam", name: "Pounded Yam", price: 1500, category: "carb" },
+  { id: "eba", name: "Eba", price: 800, category: "carb" },
+  { id: "plantain", name: "Plantain", price: 600, category: "carb" },
+  
+  // Vegetables
+  { id: "spinach", name: "Spinach", price: 500, category: "vegetable" },
+  { id: "peppers", name: "Bell Peppers", price: 400, category: "vegetable" },
+  { id: "onions", name: "Onions", price: 200, category: "vegetable" },
+  { id: "tomatoes", name: "Tomatoes", price: 300, category: "vegetable" },
+  { id: "cabbage", name: "Cabbage", price: 400, category: "vegetable" },
+  
+  // Sauces
+  { id: "egusi", name: "Egusi Soup", price: 1500, category: "sauce" },
+  { id: "ogbono", name: "Ogbono Soup", price: 1500, category: "sauce" },
+  { id: "pepper_soup", name: "Pepper Soup Base", price: 1000, category: "sauce" },
+  { id: "stew", name: "Tomato Stew", price: 800, category: "sauce" },
+  
+  // Extras
+  { id: "egg", name: "Fried Egg", price: 400, category: "extra" },
+  { id: "avocado", name: "Avocado", price: 600, category: "extra" },
+  { id: "cheese", name: "Cheese", price: 500, category: "extra" },
+  { id: "suya_spice", name: "Suya Spice", price: 300, category: "extra" },
+];
+
+// Base price for custom meals
+export const CUSTOM_MEAL_BASE_PRICE = 1000;
+export const CUSTOM_MEAL_PREP_TIME = 30;
 
 export type OrderStatus = "pending_payment" | "paid" | "preparing" | "ready" | "completed";
 
