@@ -160,7 +160,7 @@ export const CustomMealBuilder = ({ ingredients, settings, onAddToCart }: Custom
         <div className="bg-background rounded-lg p-4 border border-border">
           <div className="flex justify-between items-center mb-2">
             <span className="text-muted-foreground">Base Price:</span>
-            <span>₦{CUSTOM_MEAL_BASE_PRICE.toLocaleString()}</span>
+            <span>₦{basePrice.toLocaleString()}</span>
           </div>
           {selectedIngredients.length > 0 && (
             <div className="flex justify-between items-center mb-2">

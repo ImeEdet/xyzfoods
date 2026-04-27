@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 import { CartItem, MenuItem, Ingredient, SpecialInstructions } from "@/types/menu";
 import { useOrders } from "@/hooks/useOrders";
+import { useMenu } from "@/hooks/useMenu";
 import { MenuItems } from "@/components/menu/MenuItems";
 import { OrderCart } from "@/components/menu/OrderCart";
 import { OrderTracking } from "@/components/menu/OrderTracking";
