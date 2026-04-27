@@ -168,6 +168,7 @@ const Index = () => {
       <footer className="py-8 px-4 bg-foreground text-background">
         <div className="container mx-auto text-center">
           <p className="opacity-70">© 2026 XYZ Foods. All rights reserved.</p>
+          <a href="/admin/login" className="text-xs opacity-40 hover:opacity-80 mt-2 inline-block">Staff login</a>
         </div>
       </footer>
     </div>
