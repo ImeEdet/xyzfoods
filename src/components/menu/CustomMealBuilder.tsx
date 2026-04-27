@@ -37,58 +37,49 @@ const categoryLabels: Record<string, string> = {
   extra: "Extras",
 };
 
-export const CustomMealBuilder = ({ onAddToCart }: CustomMealBuilderProps) => {
+export const CustomMealBuilder = ({ ingredients, settings, onAddToCart }: CustomMealBuilderProps) => {
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>([]);
   const [selectedInstructions, setSelectedInstructions] = useState<string[]>([]);
   const [customNote, setCustomNote] = useState("");
 
+  const availableIngredients: Ingredient[] = ingredients
+    .filter((i) => i.available)
+    .map((i) => ({ id: i.id, name: i.name, price: i.price, category: i.category as Ingredient["category"] }));
+
   const toggleIngredient = (ingredient: Ingredient) => {
     setSelectedIngredients((prev) => {
       const exists = prev.find((i) => i.id === ingredient.id);
-      if (exists) {
-        return prev.filter((i) => i.id !== ingredient.id);
-      }
+      if (exists) return prev.filter((i) => i.id !== ingredient.id);
       return [...prev, ingredient];
     });
   };
 
   const toggleInstruction = (instruction: string) => {
     setSelectedInstructions((prev) =>
-      prev.includes(instruction)
-        ? prev.filter((i) => i !== instruction)
-        : [...prev, instruction]
+      prev.includes(instruction) ? prev.filter((i) => i !== instruction) : [...prev, instruction]
     );
   };
 
-  const totalPrice = CUSTOM_MEAL_BASE_PRICE + selectedIngredients.reduce((sum, i) => sum + i.price, 0);
+  const basePrice = settings.customMealBasePrice;
+  const totalPrice = basePrice + selectedIngredients.reduce((sum, i) => sum + i.price, 0);
 
   const handleAddToCart = () => {
     if (selectedIngredients.length === 0) return;
-
-    const mealName = `Custom: ${selectedIngredients.slice(0, 3).map(i => i.name).join(", ")}${selectedIngredients.length > 3 ? "..." : ""}`;
-
+    const mealName = `Custom: ${selectedIngredients.slice(0, 3).map((i) => i.name).join(", ")}${selectedIngredients.length > 3 ? "..." : ""}`;
     onAddToCart({
       name: mealName,
       price: totalPrice,
-      time: CUSTOM_MEAL_PREP_TIME,
+      time: settings.customMealPrepTime,
       ingredients: selectedIngredients,
-      instructions: {
-        commonOptions: selectedInstructions,
-        customNote,
-      },
+      instructions: { commonOptions: selectedInstructions, customNote },
     });
-
-    // Reset form
     setSelectedIngredients([]);
     setSelectedInstructions([]);
     setCustomNote("");
   };
 
   const groupedIngredients = availableIngredients.reduce((acc, ingredient) => {
-    if (!acc[ingredient.category]) {
-      acc[ingredient.category] = [];
-    }
-    acc[ingredient.category].push(ingredient);
+    (acc[ingredient.category] ||= []).push(ingredient);
     return acc;
   }, {} as Record<string, Ingredient[]>);
 
