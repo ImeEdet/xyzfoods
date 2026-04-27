@@ -6,15 +6,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChefHat, Plus, ShoppingCart, Utensils, Leaf, Droplets, Sparkles, Wheat } from "lucide-react";
-import { 
-  Ingredient, 
-  availableIngredients, 
-  CUSTOM_MEAL_BASE_PRICE, 
-  CUSTOM_MEAL_PREP_TIME,
-  commonInstructionOptions 
-} from "@/types/menu";
+import { Ingredient, commonInstructionOptions } from "@/types/menu";
+import { DbIngredient, AppSettings } from "@/hooks/useMenu";
 
 interface CustomMealBuilderProps {
+  ingredients: DbIngredient[];
+  settings: AppSettings;
   onAddToCart: (meal: {
     name: string;
     price: number;
