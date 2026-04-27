@@ -6,15 +6,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChefHat, Plus, ShoppingCart, Utensils, Leaf, Droplets, Sparkles, Wheat } from "lucide-react";
-import { 
-  Ingredient, 
-  availableIngredients, 
-  CUSTOM_MEAL_BASE_PRICE, 
-  CUSTOM_MEAL_PREP_TIME,
-  commonInstructionOptions 
-} from "@/types/menu";
+import { Ingredient, commonInstructionOptions } from "@/types/menu";
+import { DbIngredient, AppSettings } from "@/hooks/useMenu";
 
 interface CustomMealBuilderProps {
+  ingredients: DbIngredient[];
+  settings: AppSettings;
   onAddToCart: (meal: {
     name: string;
     price: number;
@@ -40,58 +37,49 @@ const categoryLabels: Record<string, string> = {
   extra: "Extras",
 };
 
-export const CustomMealBuilder = ({ onAddToCart }: CustomMealBuilderProps) => {
+export const CustomMealBuilder = ({ ingredients, settings, onAddToCart }: CustomMealBuilderProps) => {
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>([]);
   const [selectedInstructions, setSelectedInstructions] = useState<string[]>([]);
   const [customNote, setCustomNote] = useState("");
 
+  const availableIngredients: Ingredient[] = ingredients
+    .filter((i) => i.available)
+    .map((i) => ({ id: i.id, name: i.name, price: i.price, category: i.category as Ingredient["category"] }));
+
   const toggleIngredient = (ingredient: Ingredient) => {
     setSelectedIngredients((prev) => {
       const exists = prev.find((i) => i.id === ingredient.id);
-      if (exists) {
-        return prev.filter((i) => i.id !== ingredient.id);
-      }
+      if (exists) return prev.filter((i) => i.id !== ingredient.id);
       return [...prev, ingredient];
     });
   };
 
   const toggleInstruction = (instruction: string) => {
     setSelectedInstructions((prev) =>
-      prev.includes(instruction)
-        ? prev.filter((i) => i !== instruction)
-        : [...prev, instruction]
+      prev.includes(instruction) ? prev.filter((i) => i !== instruction) : [...prev, instruction]
     );
   };
 
-  const totalPrice = CUSTOM_MEAL_BASE_PRICE + selectedIngredients.reduce((sum, i) => sum + i.price, 0);
+  const basePrice = settings.customMealBasePrice;
+  const totalPrice = basePrice + selectedIngredients.reduce((sum, i) => sum + i.price, 0);
 
   const handleAddToCart = () => {
     if (selectedIngredients.length === 0) return;
-
-    const mealName = `Custom: ${selectedIngredients.slice(0, 3).map(i => i.name).join(", ")}${selectedIngredients.length > 3 ? "..." : ""}`;
-
+    const mealName = `Custom: ${selectedIngredients.slice(0, 3).map((i) => i.name).join(", ")}${selectedIngredients.length > 3 ? "..." : ""}`;
     onAddToCart({
       name: mealName,
       price: totalPrice,
-      time: CUSTOM_MEAL_PREP_TIME,
+      time: settings.customMealPrepTime,
       ingredients: selectedIngredients,
-      instructions: {
-        commonOptions: selectedInstructions,
-        customNote,
-      },
+      instructions: { commonOptions: selectedInstructions, customNote },
     });
-
-    // Reset form
     setSelectedIngredients([]);
     setSelectedInstructions([]);
     setCustomNote("");
   };
 
   const groupedIngredients = availableIngredients.reduce((acc, ingredient) => {
-    if (!acc[ingredient.category]) {
-      acc[ingredient.category] = [];
-    }
-    acc[ingredient.category].push(ingredient);
+    (acc[ingredient.category] ||= []).push(ingredient);
     return acc;
   }, {} as Record<string, Ingredient[]>);
 
@@ -172,7 +160,7 @@ export const CustomMealBuilder = ({ onAddToCart }: CustomMealBuilderProps) => {
         <div className="bg-background rounded-lg p-4 border border-border">
           <div className="flex justify-between items-center mb-2">
             <span className="text-muted-foreground">Base Price:</span>
-            <span>₦{CUSTOM_MEAL_BASE_PRICE.toLocaleString()}</span>
+            <span>₦{basePrice.toLocaleString()}</span>
           </div>
           {selectedIngredients.length > 0 && (
             <div className="flex justify-between items-center mb-2">

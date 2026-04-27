@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 import { CartItem, MenuItem, Ingredient, SpecialInstructions } from "@/types/menu";
 import { useOrders } from "@/hooks/useOrders";
+import { useMenu } from "@/hooks/useMenu";
 import { MenuItems } from "@/components/menu/MenuItems";
 import { OrderCart } from "@/components/menu/OrderCart";
 import { OrderTracking } from "@/components/menu/OrderTracking";
@@ -25,6 +26,8 @@ const Menu = () => {
   const [showNamePrompt, setShowNamePrompt] = useState(true);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [customMealCounter, setCustomMealCounter] = useState(1000); // Start at 1000 for custom meal IDs
+
+  const { items: menuItems, ingredients: dbIngredients, settings: appSettings } = useMenu();
 
   const {
     orders,
@@ -262,8 +265,11 @@ const Menu = () => {
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Menu Items */}
               <div className="lg:col-span-2">
-                <MenuItems 
-                  onAddToCart={addToCart} 
+                <MenuItems
+                  items={menuItems}
+                  ingredients={dbIngredients}
+                  settings={appSettings}
+                  onAddToCart={addToCart}
                   onAddCustomMeal={addCustomMealToCart}
                 />
               </div>
