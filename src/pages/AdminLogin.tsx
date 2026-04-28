@@ -21,6 +21,11 @@ const AdminLogin = () => {
     if (!authLoading && isStaff) navigate("/admin", { replace: true });
   }, [authLoading, isStaff, navigate]);
 
+  const { user } = useStaffAuth();
+  useEffect(() => {
+    if (!authLoading && user && !isStaff) navigate("/admin/pending", { replace: true });
+  }, [authLoading, user, isStaff, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
