@@ -148,6 +148,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_staff: { Args: { _user_id: string }; Returns: boolean }
+      claim_developer_role: { Args: { _token: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -156,6 +158,15 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      list_staff_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          roles: string[]
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "owner" | "chef" | "developer"
