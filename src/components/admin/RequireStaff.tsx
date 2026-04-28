@@ -3,7 +3,7 @@ import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Loader2 } from "lucide-react";
 
 export const RequireStaff = ({ children }: { children: React.ReactNode }) => {
-  const { loading, isStaff } = useStaffAuth();
+  const { loading, isStaff, user } = useStaffAuth();
 
   if (loading) {
     return (
@@ -13,6 +13,7 @@ export const RequireStaff = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!isStaff) return <Navigate to="/admin/login" replace />;
+  if (!user) return <Navigate to="/admin/login" replace />;
+  if (!isStaff) return <Navigate to="/admin/pending" replace />;
   return <>{children}</>;
 };
