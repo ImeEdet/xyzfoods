@@ -1,50 +1,65 @@
 ## Goal
 
-Add a private admin area at `/admin` where only the **chef** and **owner** can sign in and manage the menu (add, edit, delete, toggle availability of items, and adjust custom-meal ingredients). The public menu page will read from the same database so changes go live instantly.
+Remove the "first signup = owner" auto-promotion and replace it with a deliberate, owner-controlled role assignment flow. As the builder, you'll get a temporary, revocable **`developer`** role that can manage staff but is clearly not the owner — and you'll hand the owner seat to the real owner with one click, then optionally remove your own access when you're done.
 
-## What you (the user) will see
+## How role assignment will work
 
-1. A new **Login** page at `/admin/login` (email + password).
-2. A new **Admin Dashboard** at `/admin` with tabs:
-   - **Menu Items** — table of all dishes with edit / delete / toggle "available" buttons, plus an "Add new dish" form (name, description, price, prep time, category).
-   - **Custom Meal Ingredients** — manage the list used by the "Build Your Own Meal" feature (name, category, price).
-   - **Settings** — change the custom-meal base price and base prep time.
-3. A small **"Staff login"** link in the footer of the public site (subtle, not prominent).
-4. Customers see no change in flow — the menu just now loads from the database.
+Three roles exist: **`owner`**, **`chef`**, **`developer`**.
 
-## Access control
+- **`owner`** — full control, including assigning/revoking any role (including other owners). Only one person should hold this normally.
+- **`chef`** — manage menu items, ingredients, and settings (read).
+- **`developer`** — manage staff accounts and roles (so you can bootstrap things), but **cannot** edit the menu or settings. Intended to be removed once the real owner is set up.
 
-- Only users explicitly granted the **`chef`** or **`owner`** role can reach `/admin`. Everyone else (including signed-in customers) is redirected away.
-- Sign-up is disabled on the admin login page. The first **owner** account is seeded by you (instructions provided after setup); the owner can then invite the chef from the dashboard by creating their account and assigning the `chef` role.
+### The new bootstrap flow
 
-## Technical details
+1. The auto-promotion trigger is **removed**. New signups get **no role** by default and land on a "Pending approval" screen.
+2. A **one-time setup token** is generated and shown to you (printed in the migration result, also viewable in the DB). The first user who signs up and submits this token at `/admin/setup` is granted the **`developer`** role. The token is then burned (single use).
+3. As the developer, you sign in to `/admin`, go to a new **Staff** tab, and:
+   - Invite the real owner: enter their email, they sign up, you click **"Promote to Owner"**.
+   - Invite the chef the same way and click **"Assign Chef"**.
+4. Once the real owner confirms they're in, you click **"Remove my developer access"** (or they revoke it from their Staff tab). Your account remains but has no staff privileges.
 
-- **Lovable Cloud** is enabled to provide auth + database.
-- **Auth**: email/password only (no Google for staff). Sessions handled via `onAuthStateChange`.
-- **Tables**:
-  - `app_role` enum: `owner`, `chef`.
-  - `user_roles (id, user_id → auth.users, role)` with the standard `has_role()` SECURITY DEFINER function and RLS (per project security rules — roles never on profiles).
-  - `menu_items (id, name, description, price, prep_time, category, available, sort_order, created_at)`.
-  - `ingredients (id, name, category, price, available, created_at)`.
-  - `app_settings (key, value)` for custom-meal base price / prep time.
-- **RLS**:
-  - `menu_items` and `ingredients`: public SELECT (so customers can read), INSERT/UPDATE/DELETE restricted to `has_role(auth.uid(), 'owner') OR has_role(auth.uid(), 'chef')`.
-  - `user_roles`: SELECT for the row's owner; INSERT/DELETE restricted to `owner` only (so only owners can grant/revoke chef access).
-  - `app_settings`: public SELECT, write restricted to `owner`.
-- **Seed data**: existing hard-coded `menuData` and `availableIngredients` from `src/types/menu.ts` migrated into the DB on first run.
-- **Frontend changes**:
-  - New `useMenu()` hook fetching `menu_items` and `ingredients` from Supabase (with realtime so the public menu updates live when staff edit).
-  - `MenuItems.tsx` and `CustomMealBuilder.tsx` updated to consume the hook instead of static data.
-  - New routes in `App.tsx`: `/admin/login`, `/admin` (wrapped in a `RequireStaff` guard component).
-  - New files: `src/pages/AdminLogin.tsx`, `src/pages/Admin.tsx`, `src/components/admin/MenuItemsTable.tsx`, `src/components/admin/IngredientsTable.tsx`, `src/components/admin/SettingsPanel.tsx`, `src/components/admin/RequireStaff.tsx`, `src/hooks/useMenu.ts`, `src/hooks/useStaffAuth.ts`.
+### Staff management UI (new "Staff" tab in /admin)
 
-## Out of scope (can come later)
+Visible to `owner` and `developer`:
 
-- Inviting chef accounts via email link (for now, owner creates the account from the dashboard).
-- Image uploads for dishes.
-- Audit log of who changed what.
-- Order management from the admin (kitchen view) — say the word and I'll add it next.
+- Table of all users who have any role: email, role badge, created date.
+- Table of pending users (signed up but no role yet): email, "Assign role ▾" dropdown (owner/chef/developer/deny).
+- Per-row actions: **Change role**, **Revoke access**.
+- Guards:
+  - Only `owner` can grant/revoke `owner` and can revoke `developer`.
+  - `developer` can grant/revoke `chef` and `developer`, but **cannot** touch `owner` rows.
+  - You can never revoke your own last `owner` role (prevents lockout).
 
-## After approval
+## Technical changes
 
-I'll enable Lovable Cloud, run the migrations, seed the existing menu, build the screens, and give you the steps to claim the first owner account.
+**Migration:**
+- Add `'developer'` to the `app_role` enum.
+- Drop the `bootstrap_first_owner` trigger and function (no more auto-owner).
+- Create `setup_tokens (token text pk, used_at timestamptz)` with one row inserted (random token, returned in migration output). RLS: no public access; only used via a SECURITY DEFINER function.
+- Add SECURITY DEFINER function `claim_developer_role(_token text)` — verifies token unused, assigns `developer` role to `auth.uid()`, marks token used. Grants execute to `authenticated`.
+- Update `is_staff()` to include `'developer'` so the existing menu RLS keeps working… **actually no** — `developer` should NOT edit menu items. So instead: keep `is_staff()` as `owner|chef` for menu/ingredient writes, and add a separate `can_manage_staff()` returning `owner|developer` for the new Staff tab logic.
+- New RLS on `user_roles`:
+  - SELECT: user sees own row OR `can_manage_staff(auth.uid())` sees all.
+  - INSERT/DELETE: `can_manage_staff(auth.uid())`, with a CHECK trigger preventing non-owners from inserting/deleting rows where `role = 'owner'`, and preventing anyone from removing the last owner.
+
+**Frontend:**
+- `useStaffAuth.ts`: add `isDeveloper`, `canManageStaff` flags.
+- `RequireStaff.tsx`: allow `owner | chef | developer` through to `/admin`, but the Menu/Ingredients/Settings tabs hide write controls for `developer`.
+- New `src/pages/AdminSetup.tsx` at `/admin/setup` — token entry form, calls `claim_developer_role` RPC.
+- New `src/components/admin/StaffTable.tsx` — Staff tab, only rendered for `owner` or `developer`.
+- `AdminLogin.tsx`: change copy from "Create the first owner account" to "Sign up — an admin will grant you access", and after a fresh signup with no role, redirect to a small "Pending approval" screen instead of looping back to login.
+- `Admin.tsx`: add the Staff tab conditionally.
+
+## What you'll do after I implement this
+
+1. I'll print the one-time setup token at the end of the migration.
+2. You sign up at `/admin/login`, then go to `/admin/setup`, paste the token → you're now `developer`.
+3. Tell the real owner to sign up at `/admin/login`. In your Staff tab, click **Promote to Owner** on their row.
+4. (Optional now or later) Click **Remove my access** on your own row.
+
+## Out of scope
+
+- Email invitations (owner still tells staff to sign up manually for now).
+- Multi-owner workflows beyond "owner can add another owner".
+- Audit log of role changes.

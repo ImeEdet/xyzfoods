@@ -101,6 +101,27 @@ export type Database = {
         }
         Relationships: []
       }
+      setup_tokens: {
+        Row: {
+          created_at: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          token: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -127,6 +148,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_staff: { Args: { _user_id: string }; Returns: boolean }
+      claim_developer_role: { Args: { _token: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -135,9 +158,18 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      list_staff_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          roles: string[]
+          user_id: string
+        }[]
+      }
     }
     Enums: {
-      app_role: "owner" | "chef"
+      app_role: "owner" | "chef" | "developer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -265,7 +297,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "chef"],
+      app_role: ["owner", "chef", "developer"],
     },
   },
 } as const
