@@ -11,20 +11,17 @@ import { toast } from "sonner";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { isStaff, loading: authLoading } = useStaffAuth();
+  const { isStaff, loading: authLoading, user } = useStaffAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && isStaff) navigate("/admin", { replace: true });
-  }, [authLoading, isStaff, navigate]);
-
-  const { user } = useStaffAuth();
-  useEffect(() => {
-    if (!authLoading && user && !isStaff) navigate("/admin/pending", { replace: true });
-  }, [authLoading, user, isStaff, navigate]);
+    if (authLoading) return;
+    if (isStaff) navigate("/admin", { replace: true });
+    else if (user) navigate("/admin/pending", { replace: true });
+  }, [authLoading, isStaff, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
