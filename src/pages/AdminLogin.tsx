@@ -56,7 +56,7 @@ const AdminLogin = () => {
           </div>
           <CardTitle className="font-serif text-2xl">Staff Access</CardTitle>
           <CardDescription>
-            {mode === "signin" ? "Sign in to manage the menu" : "Create the first owner account"}
+            {mode === "signin" ? "Sign in to manage the menu" : "Create your account — an admin will grant you access"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -71,7 +71,7 @@ const AdminLogin = () => {
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
               {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {mode === "signin" ? "Sign In" : "Create Owner Account"}
+              {mode === "signin" ? "Sign In" : "Create Account"}
             </Button>
           </form>
           <button
@@ -79,9 +79,12 @@ const AdminLogin = () => {
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             className="block w-full text-center text-sm text-muted-foreground mt-4 hover:text-foreground"
           >
-            {mode === "signin" ? "First time? Create the owner account" : "Already have an account? Sign in"}
+            {mode === "signin" ? "First time? Create an account" : "Already have an account? Sign in"}
           </button>
-          <Link to="/" className="block text-center text-xs text-muted-foreground mt-3 hover:text-foreground">
+          <Link to="/admin/setup" className="block text-center text-xs text-muted-foreground mt-3 hover:text-foreground">
+            Builder? Use a setup token →
+          </Link>
+          <Link to="/" className="block text-center text-xs text-muted-foreground mt-2 hover:text-foreground">
             ← Back to site
           </Link>
         </CardContent>
