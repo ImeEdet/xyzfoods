@@ -132,3 +132,28 @@
     font-family: 'Playfair Display', serif;
   }
 }
+
+@layer utilities {
+  .font-display { font-family: 'Playfair Display', serif; }
+  .eyebrow {
+    @apply inline-block text-[11px] uppercase tracking-[0.22em] font-medium text-primary;
+  }
+  .gold-rule {
+    @apply inline-block w-10 h-px bg-accent align-middle mr-3;
+  }
+  .gradient-sun { background: var(--gradient-sun); }
+  .gradient-forest { background: var(--gradient-forest); }
+  .gradient-cream { background: var(--gradient-cream); }
+  .shadow-warm { box-shadow: var(--shadow-warm); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+
+  /* Subtle ankara-inspired pattern */
+  .pattern-ankara {
+    background-image:
+      radial-gradient(hsl(var(--accent) / 0.18) 1.2px, transparent 1.2px),
+      radial-gradient(hsl(var(--primary) / 0.10) 1.2px, transparent 1.2px);
+    background-size: 22px 22px, 22px 22px;
+    background-position: 0 0, 11px 11px;
+  }
+}
