@@ -58,6 +58,14 @@
     --sidebar-accent-foreground: 45 40% 95%;
     --sidebar-border: 145 35% 25%;
     --sidebar-ring: 8 85% 45%;
+
+    /* Editorial gradients & shadows */
+    --gradient-sun: linear-gradient(135deg, hsl(8 85% 45%) 0%, hsl(25 90% 50%) 50%, hsl(45 95% 55%) 100%);
+    --gradient-forest: linear-gradient(160deg, hsl(150 45% 14%) 0%, hsl(145 50% 22%) 100%);
+    --gradient-cream: linear-gradient(180deg, hsl(45 50% 97%) 0%, hsl(40 35% 92%) 100%);
+    --shadow-warm: 0 20px 50px -20px hsl(8 85% 45% / 0.35);
+    --shadow-card: 0 10px 30px -15px hsl(20 25% 15% / 0.18);
+    --shadow-soft: 0 2px 12px -2px hsl(20 25% 15% / 0.08);
   }
 
   .dark {
@@ -122,5 +130,30 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: 'Playfair Display', serif; }
+  .eyebrow {
+    @apply inline-block text-[11px] uppercase tracking-[0.22em] font-medium text-primary;
+  }
+  .gold-rule {
+    @apply inline-block w-10 h-px bg-accent align-middle mr-3;
+  }
+  .gradient-sun { background: var(--gradient-sun); }
+  .gradient-forest { background: var(--gradient-forest); }
+  .gradient-cream { background: var(--gradient-cream); }
+  .shadow-warm { box-shadow: var(--shadow-warm); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+
+  /* Subtle ankara-inspired pattern */
+  .pattern-ankara {
+    background-image:
+      radial-gradient(hsl(var(--accent) / 0.18) 1.2px, transparent 1.2px),
+      radial-gradient(hsl(var(--primary) / 0.10) 1.2px, transparent 1.2px);
+    background-size: 22px 22px, 22px 22px;
+    background-position: 0 0, 11px 11px;
   }
 }

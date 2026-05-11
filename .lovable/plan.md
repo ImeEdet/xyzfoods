@@ -1,65 +1,70 @@
-## Goal
+# Customer UI Refresh — "Lagos Editorial"
 
-Remove the "first signup = owner" auto-promotion and replace it with a deliberate, owner-controlled role assignment flow. As the builder, you'll get a temporary, revocable **`developer`** role that can manage staff but is clearly not the owner — and you'll hand the owner seat to the real owner with one click, then optionally remove your own access when you're done.
+The current customer surfaces (Landing, Name prompt, Menu, Cart, Tracking, Reservation) are functional but visually flat: solid backgrounds, generic shadcn cards, no imagery, no motion, predictable layouts. This plan turns the customer journey into something that feels crafted, warm, and unmistakably XYZ Foods — without changing any business logic, data model, or order flow.
 
-## How role assignment will work
+## Design Direction
 
-Three roles exist: **`owner`**, **`chef`**, **`developer`**.
+**"Lagos Editorial"** — a fusion of magazine-grade typography, vibrant African color, and tactile warmth.
 
-- **`owner`** — full control, including assigning/revoking any role (including other owners). Only one person should hold this normally.
-- **`chef`** — manage menu items, ingredients, and settings (read).
-- **`developer`** — manage staff accounts and roles (so you can bootstrap things), but **cannot** edit the menu or settings. Intended to be removed once the real owner is set up.
+- **Palette**: keep the existing red/green/gold tokens, but introduce layered surfaces — warm cream paper, deep terracotta, forest ink, golden highlights. Add subtle ankara-inspired pattern accents (SVG, low opacity) as background texture, never as noise.
+- **Typography**: keep Playfair Display for display, Inter for body, but use much larger editorial headlines, mixed weights, and an accent script-or-serif italic for category labels ("Nigerian", "Continental"). Add a small uppercase tracked label style for section eyebrows.
+- **Imagery**: replace the empty `ChefHat` placeholders with generated dish/hero imagery (warm, food-photography style) used as hero, signature dish thumbnails, and category banners.
+- **Motion**: add framer-motion for one signature hero animation, staggered card entrances on the menu, smooth tab transitions, and a delightful cart-add micro-interaction.
+- **Surfaces**: replace flat cards with layered surfaces — soft inner shadows, warm borders, subtle gradient overlays on imagery, golden accent rules.
 
-### The new bootstrap flow
+## Scope (frontend/presentation only)
 
-1. The auto-promotion trigger is **removed**. New signups get **no role** by default and land on a "Pending approval" screen.
-2. A **one-time setup token** is generated and shown to you (printed in the migration result, also viewable in the DB). The first user who signs up and submits this token at `/admin/setup` is granted the **`developer`** role. The token is then burned (single use).
-3. As the developer, you sign in to `/admin`, go to a new **Staff** tab, and:
-   - Invite the real owner: enter their email, they sign up, you click **"Promote to Owner"**.
-   - Invite the chef the same way and click **"Assign Chef"**.
-4. Once the real owner confirms they're in, you click **"Remove my developer access"** (or they revoke it from their Staff tab). Your account remains but has no staff privileges.
+### 1. Landing page (`src/pages/Index.tsx`)
+- New hero: full-bleed warm food photograph + large editorial headline overlay, eyebrow label, dual CTAs, scroll indicator.
+- Replace "Why Choose" generic icon cards with an editorial 2-column block: large image + numbered story items.
+- Signature dishes: real generated dish images, asymmetric grid (one large + three smaller), price-on-hover overlay.
+- New "Our Story" strip with golden divider and a script accent.
+- Contact section: redesign as a dark forest-green band with gold rules instead of solid red.
+- Footer: keep staff link visible but refine spacing/typography.
 
-### Staff management UI (new "Staff" tab in /admin)
+### 2. Name prompt (`src/pages/Menu.tsx` welcome card)
+- Convert from a centered shadcn card to a split-screen welcome: left = warm food image with brand mark + table badge, right = elegant form with editorial heading "Welcome to the table".
 
-Visible to `owner` and `developer`:
+### 3. Menu page chrome (`src/pages/Menu.tsx`)
+- Sticky nav: add brand wordmark with gold underline accent, table + greeting chips redesigned as pill-shaped tokens, tab bar restyled with an animated underline indicator (replacing default shadcn tabs look).
+- Add a slim category filter strip under the tabs (All / Nigerian / Continental / Custom).
 
-- Table of all users who have any role: email, role badge, created date.
-- Table of pending users (signed up but no role yet): email, "Assign role ▾" dropdown (owner/chef/developer/deny).
-- Per-row actions: **Change role**, **Revoke access**.
-- Guards:
-  - Only `owner` can grant/revoke `owner` and can revoke `developer`.
-  - `developer` can grant/revoke `chef` and `developer`, but **cannot** touch `owner` rows.
-  - You can never revoke your own last `owner` role (prevents lockout).
+### 4. Menu items (`src/components/menu/MenuItems.tsx`, `CustomMealBuilder.tsx`)
+- Item cards: image-led layout with dish photo, category eyebrow, serif name, price as gold tag, prep-time as small chip, "Add" as a circular accent button. Stagger entrance animation.
+- Custom Meal Builder: redesign as a step-by-step builder with progress indicator and a live preview panel.
 
-## Technical changes
+### 5. Cart (`src/components/menu/OrderCart.tsx`)
+- Reframe as a "Your Table" panel with editorial header, line items as compact rows with thumb + price, sticky total bar with gradient CTA.
+- Empty state: illustrated/iconographic empty state instead of plain text.
 
-**Migration:**
-- Add `'developer'` to the `app_role` enum.
-- Drop the `bootstrap_first_owner` trigger and function (no more auto-owner).
-- Create `setup_tokens (token text pk, used_at timestamptz)` with one row inserted (random token, returned in migration output). RLS: no public access; only used via a SECURITY DEFINER function.
-- Add SECURITY DEFINER function `claim_developer_role(_token text)` — verifies token unused, assigns `developer` role to `auth.uid()`, marks token used. Grants execute to `authenticated`.
-- Update `is_staff()` to include `'developer'` so the existing menu RLS keeps working… **actually no** — `developer` should NOT edit menu items. So instead: keep `is_staff()` as `owner|chef` for menu/ingredient writes, and add a separate `can_manage_staff()` returning `owner|developer` for the new Staff tab logic.
-- New RLS on `user_roles`:
-  - SELECT: user sees own row OR `can_manage_staff(auth.uid())` sees all.
-  - INSERT/DELETE: `can_manage_staff(auth.uid())`, with a CHECK trigger preventing non-owners from inserting/deleting rows where `role = 'owner'`, and preventing anyone from removing the last owner.
+### 6. Order tracking (`src/components/menu/OrderTracking.tsx`)
+- Pending payment, active, and history as visually distinct sections with editorial headers.
+- Active orders: redesign the live countdown as a circular progress ring with status pill and a horizontal status timeline (Paid → Preparing → Ready → Completed).
+- Empty state per section.
 
-**Frontend:**
-- `useStaffAuth.ts`: add `isDeveloper`, `canManageStaff` flags.
-- `RequireStaff.tsx`: allow `owner | chef | developer` through to `/admin`, but the Menu/Ingredients/Settings tabs hide write controls for `developer`.
-- New `src/pages/AdminSetup.tsx` at `/admin/setup` — token entry form, calls `claim_developer_role` RPC.
-- New `src/components/admin/StaffTable.tsx` — Staff tab, only rendered for `owner` or `developer`.
-- `AdminLogin.tsx`: change copy from "Create the first owner account" to "Sign up — an admin will grant you access", and after a fresh signup with no role, redirect to a small "Pending approval" screen instead of looping back to login.
-- `Admin.tsx`: add the Staff tab conditionally.
+### 7. Reservation (`src/components/menu/ReservationForm.tsx`)
+- Two-mode toggle (Dine In / Bulk Pickup) restyled as a segmented control with imagery preview per mode.
+- Form grouped into clearly labeled sections with editorial headings.
 
-## What you'll do after I implement this
+### 8. Shared
+- Add 4–6 generated images via `imagegen--generate_image` into `src/assets/` (hero, story, signature dishes, reservation banners).
+- Add a reusable `<SectionEyebrow>` and `<EditorialHeading>` pattern via Tailwind utility classes — no new design tokens needed since the palette already covers it; only add a couple of gradient/shadow tokens to `index.css` (`--shadow-warm`, `--gradient-sun`).
+- Install `framer-motion` for entrance + micro-interactions.
 
-1. I'll print the one-time setup token at the end of the migration.
-2. You sign up at `/admin/login`, then go to `/admin/setup`, paste the token → you're now `developer`.
-3. Tell the real owner to sign up at `/admin/login`. In your Staff tab, click **Promote to Owner** on their row.
-4. (Optional now or later) Click **Remove my access** on your own row.
+## Out of scope (won't touch)
 
-## Out of scope
+- Order flow logic, cart state, table numbering, name onboarding rules.
+- Supabase schema, auth, RLS, admin/staff pages.
+- Payment simulation behavior.
 
-- Email invitations (owner still tells staff to sign up manually for now).
-- Multi-owner workflows beyond "owner can add another owner".
-- Audit log of role changes.
+## Technical notes
+
+- New deps: `framer-motion`.
+- New tokens in `src/index.css`: `--gradient-sun`, `--gradient-forest`, `--shadow-warm`, `--shadow-card`. All HSL.
+- New assets in `src/assets/`: `hero-jollof.jpg`, `story-chef.jpg`, `dish-jollof.jpg`, `dish-egusi.jpg`, `dish-grill.jpg`, `dish-pasta.jpg`, `reservation-dinein.jpg`, `reservation-pickup.jpg`.
+- All colors via semantic tokens — no raw hex/`text-white`/`bg-black` in components.
+- Mobile-first: current viewport is 753px; cards collapse to single column under `md`, hero text scales down, sticky cart becomes a bottom drawer trigger on mobile.
+
+## Deliverable
+
+A cohesive, image-rich, motion-enhanced customer journey that no longer looks like a default shadcn template — while preserving every existing interaction.
