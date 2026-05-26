@@ -8,6 +8,7 @@ import { MenuItemsTable } from "@/components/admin/MenuItemsTable";
 import { IngredientsTable } from "@/components/admin/IngredientsTable";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { StaffTable } from "@/components/admin/StaffTable";
+import { AccessRequests } from "@/components/admin/AccessRequests";
 import { LogOut, Loader2 } from "lucide-react";
 
 const Admin = () => {
