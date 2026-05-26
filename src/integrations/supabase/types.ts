@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          note: string | null
+          requested_role: Database["public"]["Enums"]["app_role"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["access_request_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          note?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["access_request_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          note?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["access_request_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -148,6 +187,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_access_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
       can_manage_staff: { Args: { _user_id: string }; Returns: boolean }
       claim_developer_role: { Args: { _token: string }; Returns: string }
       has_role: {
@@ -169,6 +212,7 @@ export type Database = {
       }
     }
     Enums: {
+      access_request_status: "pending" | "approved" | "denied"
       app_role: "owner" | "chef" | "developer"
     }
     CompositeTypes: {
@@ -297,6 +341,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_request_status: ["pending", "approved", "denied"],
       app_role: ["owner", "chef", "developer"],
     },
   },
