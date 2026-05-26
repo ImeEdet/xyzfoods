@@ -46,7 +46,7 @@ const Admin = () => {
             {canEditMenu && <TabsContent value="items" className="mt-6"><MenuItemsTable items={items} /></TabsContent>}
             {canEditMenu && <TabsContent value="ingredients" className="mt-6"><IngredientsTable ingredients={ingredients} /></TabsContent>}
             {canEditMenu && <TabsContent value="settings" className="mt-6"><SettingsPanel settings={settings} isOwner={isOwner} /></TabsContent>}
-            {canManageStaff && <TabsContent value="staff" className="mt-6"><StaffTable /></TabsContent>}
+            {canManageStaff && <TabsContent value="staff" className="mt-6 space-y-6"><AccessRequests /><StaffTable /></TabsContent>}
           </Tabs>
         )}
       </div>
