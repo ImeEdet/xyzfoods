@@ -1,70 +1,45 @@
-# Customer UI Refresh — "Lagos Editorial"
+# Owner-approved staff access
 
-The current customer surfaces (Landing, Name prompt, Menu, Cart, Tracking, Reservation) are functional but visually flat: solid backgrounds, generic shadcn cards, no imagery, no motion, predictable layouts. This plan turns the customer journey into something that feels crafted, warm, and unmistakably XYZ Foods — without changing any business logic, data model, or order flow.
+Two parts: (1) get you back in right now, (2) build a sustainable approval flow so nobody ever needs a one-time token again.
 
-## Design Direction
+## Part 1 — Immediate recovery
 
-**"Lagos Editorial"** — a fusion of magazine-grade typography, vibrant African color, and tactile warmth.
+You already have an account (the Google-signed-in one sitting at `/admin/pending`). I'll grant the `developer` role to that user directly via a one-off data insert. Faster than minting another token, and once Part 2 ships nobody will need tokens anymore.
 
-- **Palette**: keep the existing red/green/gold tokens, but introduce layered surfaces — warm cream paper, deep terracotta, forest ink, golden highlights. Add subtle ankara-inspired pattern accents (SVG, low opacity) as background texture, never as noise.
-- **Typography**: keep Playfair Display for display, Inter for body, but use much larger editorial headlines, mixed weights, and an accent script-or-serif italic for category labels ("Nigerian", "Continental"). Add a small uppercase tracked label style for section eyebrows.
-- **Imagery**: replace the empty `ChefHat` placeholders with generated dish/hero imagery (warm, food-photography style) used as hero, signature dish thumbnails, and category banners.
-- **Motion**: add framer-motion for one signature hero animation, staggered card entrances on the menu, smooth tab transitions, and a delightful cart-add micro-interaction.
-- **Surfaces**: replace flat cards with layered surfaces — soft inner shadows, warm borders, subtle gradient overlays on imagery, golden accent rules.
+I'll need to confirm your user from `auth.users` (by email) before inserting, so I'll show you the match first.
 
-## Scope (frontend/presentation only)
+## Part 2 — Access request flow
 
-### 1. Landing page (`src/pages/Index.tsx`)
-- New hero: full-bleed warm food photograph + large editorial headline overlay, eyebrow label, dual CTAs, scroll indicator.
-- Replace "Why Choose" generic icon cards with an editorial 2-column block: large image + numbered story items.
-- Signature dishes: real generated dish images, asymmetric grid (one large + three smaller), price-on-hover overlay.
-- New "Our Story" strip with golden divider and a script accent.
-- Contact section: redesign as a dark forest-green band with gold rules instead of solid red.
-- Footer: keep staff link visible but refine spacing/typography.
+### New table: `access_requests`
+- `user_id` (FK to auth.users), `email`, `note` (optional reason from requester), `status` (`pending` / `approved` / `denied`), `requested_role` (defaults to `chef`), `reviewed_by`, `reviewed_at`, timestamps
+- One pending request per user (unique partial index)
+- RLS: a user can insert/view their own request; owners + developers can view all and update status
 
-### 2. Name prompt (`src/pages/Menu.tsx` welcome card)
-- Convert from a centered shadcn card to a split-screen welcome: left = warm food image with brand mark + table badge, right = elegant form with editorial heading "Welcome to the table".
+### UI changes
 
-### 3. Menu page chrome (`src/pages/Menu.tsx`)
-- Sticky nav: add brand wordmark with gold underline accent, table + greeting chips redesigned as pill-shaped tokens, tab bar restyled with an animated underline indicator (replacing default shadcn tabs look).
-- Add a slim category filter strip under the tabs (All / Nigerian / Continental / Custom).
+**`/admin/pending` (existing page)** — when a signed-in user has no role:
+- Add a "Request staff access" form: role dropdown (chef / owner — never developer from this flow) + optional note
+- Show status if a request already exists ("Pending review", "Denied")
 
-### 4. Menu items (`src/components/menu/MenuItems.tsx`, `CustomMealBuilder.tsx`)
-- Item cards: image-led layout with dish photo, category eyebrow, serif name, price as gold tag, prep-time as small chip, "Add" as a circular accent button. Stagger entrance animation.
-- Custom Meal Builder: redesign as a step-by-step builder with progress indicator and a live preview panel.
+**Admin dashboard** — new "Access requests" card visible to owners/developers:
+- List pending requests with email, requested role, note, timestamp
+- Approve button → inserts into `user_roles`, marks request approved
+- Deny button → marks denied (user can re-request later)
 
-### 5. Cart (`src/components/menu/OrderCart.tsx`)
-- Reframe as a "Your Table" panel with editorial header, line items as compact rows with thumb + price, sticky total bar with gradient CTA.
-- Empty state: illustrated/iconographic empty state instead of plain text.
+**`/admin/login`** — replace the "Builder? Use a setup token →" link with "New here? Sign in and request access" so the token flow is de-emphasized (kept available as a fallback, not advertised).
 
-### 6. Order tracking (`src/components/menu/OrderTracking.tsx`)
-- Pending payment, active, and history as visually distinct sections with editorial headers.
-- Active orders: redesign the live countdown as a circular progress ring with status pill and a horizontal status timeline (Paid → Preparing → Ready → Completed).
-- Empty state per section.
+### Why this is safe
+- Self-identifying as a builder gives you **nothing** — only an existing owner/developer can actually grant a role
+- No email infrastructure needed, no token leakage risk
+- `developer` role still only obtainable via the setup token (preserves the bootstrap guarantee)
+- Approvals are auditable (`reviewed_by`, `reviewed_at`)
 
-### 7. Reservation (`src/components/menu/ReservationForm.tsx`)
-- Two-mode toggle (Dine In / Bulk Pickup) restyled as a segmented control with imagery preview per mode.
-- Form grouped into clearly labeled sections with editorial headings.
+### Out of scope
+- Email notifications to admins when a request comes in (can add later with Lovable's transactional email if you want)
+- Bulk approve / role editing UI beyond what `StaffTable` already does
 
-### 8. Shared
-- Add 4–6 generated images via `imagegen--generate_image` into `src/assets/` (hero, story, signature dishes, reservation banners).
-- Add a reusable `<SectionEyebrow>` and `<EditorialHeading>` pattern via Tailwind utility classes — no new design tokens needed since the palette already covers it; only add a couple of gradient/shadow tokens to `index.css` (`--shadow-warm`, `--gradient-sun`).
-- Install `framer-motion` for entrance + micro-interactions.
-
-## Out of scope (won't touch)
-
-- Order flow logic, cart state, table numbering, name onboarding rules.
-- Supabase schema, auth, RLS, admin/staff pages.
-- Payment simulation behavior.
-
-## Technical notes
-
-- New deps: `framer-motion`.
-- New tokens in `src/index.css`: `--gradient-sun`, `--gradient-forest`, `--shadow-warm`, `--shadow-card`. All HSL.
-- New assets in `src/assets/`: `hero-jollof.jpg`, `story-chef.jpg`, `dish-jollof.jpg`, `dish-egusi.jpg`, `dish-grill.jpg`, `dish-pasta.jpg`, `reservation-dinein.jpg`, `reservation-pickup.jpg`.
-- All colors via semantic tokens — no raw hex/`text-white`/`bg-black` in components.
-- Mobile-first: current viewport is 753px; cards collapse to single column under `md`, hero text scales down, sticky cart becomes a bottom drawer trigger on mobile.
-
-## Deliverable
-
-A cohesive, image-rich, motion-enhanced customer journey that no longer looks like a default shadcn template — while preserving every existing interaction.
+## Technical details
+- Migration: `access_requests` table + GRANTs + RLS + unique index on `(user_id) WHERE status = 'pending'`
+- New component: `src/components/admin/AccessRequests.tsx` (rendered inside `Admin.tsx` for owners/developers)
+- Update `PendingApproval.tsx` to include the request form
+- Minor copy change in `AdminLogin.tsx`

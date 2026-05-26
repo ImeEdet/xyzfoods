@@ -102,8 +102,11 @@ const AdminLogin = () => {
           >
             {mode === "signin" ? "First time? Create an account" : "Already have an account? Sign in"}
           </button>
-          <Link to="/admin/setup" className="block text-center text-xs text-muted-foreground mt-3 hover:text-foreground">
-            Builder? Use a setup token →
+          <p className="text-center text-xs text-muted-foreground mt-3">
+            New here? Sign in or create an account, then request staff access — an owner will approve you.
+          </p>
+          <Link to="/admin/setup" className="block text-center text-[11px] text-muted-foreground/70 mt-2 hover:text-foreground">
+            Builder with a setup token? →
           </Link>
           <Link to="/" className="block text-center text-xs text-muted-foreground mt-2 hover:text-foreground">
             ← Back to site
